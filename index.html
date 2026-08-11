@@ -105,23 +105,25 @@
 
     <script>
         // === KONFIGURASI SUPABASE ===
-        // Ganti URL dan API Key dengan milik project Supabase Anda
+        // GANTI DENGAN URL & KEY MILIK ANDA
         const SUPABASE_URL = "https://pfptkqgjgojffyijjulg.supabase.co";
         const SUPABASE_KEY = "sb_publishable_OjCRKqcO12xl0efbhVHj2g_6jBePvW8";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Kredensial Admin Hardcoded
+        // Inisialisasi Client Supabase (Menggunakan nama variabel supabaseClient agar tidak bentrok)
+        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+        // Kredensial Admin
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "admin123";
 
-        // Periksa status login saat halaman dimuat
-        window.onload = () => {
+        // Jalankan saat halaman dibuka
+        document.addEventListener("DOMContentLoaded", () => {
             if (sessionStorage.getItem("isLoggedIn") === "true") {
                 showDashboard();
             }
-        };
+        });
 
-        // Otentikasi Login
+        // Handler Login
         function handleLogin(event) {
             event.preventDefault();
             const user = document.getElementById("username").value;
@@ -138,36 +140,38 @@
             }
         }
 
-        // Logout
+        // Handler Logout
         function handleLogout() {
             sessionStorage.removeItem("isLoggedIn");
             document.getElementById("dashboardSection").classList.add("hidden");
             document.getElementById("loginSection").classList.remove("hidden");
         }
 
-        // Tampilkan Halaman Utama
+        // Tampilkan Dashboard
         function showDashboard() {
             document.getElementById("loginSection").classList.add("hidden");
             document.getElementById("dashboardSection").classList.remove("hidden");
             fetchSiswa();
         }
 
-        // Ambil Data Siswa dari Supabase (READ)
+        // Ambil Data Siswa (READ)
         async function fetchSiswa() {
+            if (!supabaseClient) return;
+
             const tableBody = document.getElementById("studentTableBody");
             tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-500">Memuat data...</td></tr>`;
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('pendaftaran_siswa')
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (error) {
-                alert("Gagal mengambil data: " + error.message);
+                alert("Gagal mengambil data dari database: " + error.message);
                 return;
             }
 
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">Belum ada siswa yang mendaftar.</td></tr>`;
                 return;
             }
@@ -186,9 +190,11 @@
             `).join('');
         }
 
-        // Tambah Data Siswa Baru ke Supabase (CREATE)
+        // Tambah Data Siswa (CREATE)
         async function handleSubmitSiswa(event) {
             event.preventDefault();
+            if (!supabaseClient) return;
+
             const btn = document.getElementById("btnSubmit");
             btn.disabled = true;
             btn.innerText = "Menyimpan...";
@@ -201,7 +207,7 @@
                 no_hp: document.getElementById("no_hp").value
             };
 
-            const { data, error } = await supabase
+            const { error } = await supabaseClient
                 .from('pendaftaran_siswa')
                 .insert([payload]);
 
@@ -217,10 +223,12 @@
             btn.innerText = "Daftarkan Siswa";
         }
 
-        // Hapus Data Siswa dari Supabase (DELETE)
+        // Hapus Data Siswa (DELETE)
         async function deleteSiswa(id) {
+            if (!supabaseClient) return;
+
             if (confirm("Apakah Anda yakin ingin menghapus data siswa ini?")) {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('pendaftaran_siswa')
                     .delete()
                     .eq('id', id);
