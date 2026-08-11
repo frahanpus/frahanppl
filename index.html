@@ -3,127 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pendaftaran Siswa Baru (PPDB)</title>
+    <title>Pendaftaran Siswa Baru (PPDB Online)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 min-h-screen font-sans">
 
-    <div id="loginSection" class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
-            <div class="text-center mb-6">
-                <h1 class="text-2xl font-bold text-slate-800">Login Guru / Admin</h1>
-                <p class="text-slate-500 text-sm">Masuk untuk mengelola pendaftaran siswa</p>
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wide">PPDB Online</h1>
+            <div id="navButtons">
+                <button id="btnOpenLogin" onclick="showModalLogin()" class="bg-white text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-semibold transition shadow">
+                    Login Guru
+                </button>
+                <button id="btnLogout" onclick="handleLogout()" class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow">
+                    Logout Guru
+                </button>
             </div>
-            
-            <div id="loginError" class="hidden mb-4 p-3 bg-red-100 text-red-700 text-sm rounded-lg text-center"></div>
-
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
-                    <input type="text" id="username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                    <input type="password" id="password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition">Masuk</button>
-            </form>
         </div>
-    </div>
+    </nav>
 
-    <div id="dashboardSection" class="hidden min-h-screen">
-        <nav class="bg-blue-600 text-white shadow-md">
-            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-bold">Portal PPDB - Khusus Guru</h1>
-                <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition">Logout</button>
-            </div>
-        </nav>
+    <main class="max-w-7xl mx-auto px-4 py-8">
 
-        <div class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <div class="bg-white p-6 rounded-xl shadow">
-                <h2 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b">Form Tambah Siswa</h2>
-                <form id="studentForm" onsubmit="handleSubmitSiswa(event)" class="space-y-4">
+        <div id="loginModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+            <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full relative">
+                <button onclick="closeModalLogin()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+                <div class="text-center mb-6">
+                    <h2 class="text-xl font-bold text-slate-800">Login Guru / Admin</h2>
+                    <p class="text-xs text-slate-500 mt-1">Khusus petugas sekolah untuk mengelola data</p>
+                </div>
+                
+                <div id="loginError" class="hidden mb-4 p-3 bg-red-100 text-red-700 text-xs rounded-lg text-center"></div>
+
+                <form onsubmit="handleLogin(event)" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">Nama Lengkap</label>
-                        <input type="text" id="nama_lengkap" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Username</label>
+                        <input type="text" id="username" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">NISN</label>
-                        <input type="text" id="nisn" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+                        <input type="password" id="password" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Jenis Kelamin</label>
-                        <select id="jenis_kelamin" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <option value="">-- Pilih --</option>
-                            <option value="Laki-laki">Laki-laki</option>
-                            <option value="Perempuan">Perempuan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Asal Sekolah</label>
-                        <input type="text" id="asal_sekolah" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">No. HP / WhatsApp</label>
-                        <input type="tel" id="no_hp" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-md transition">Daftarkan Siswa</button>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">Masuk</button>
                 </form>
             </div>
+        </div>
 
-            <div class="bg-white p-6 rounded-xl shadow lg:col-span-2">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b">
-                    <h2 class="text-lg font-bold text-slate-800">Daftar Siswa Terdaftar</h2>
-                    <button onclick="fetchSiswa()" class="text-sm text-blue-600 hover:underline">Refresh Data</button>
+        <div id="publicSection" class="max-w-2xl mx-auto">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-md border border-slate-200">
+                <div class="mb-6 border-b pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Formulir Pendaftaran Siswa Baru</h2>
+                    <p class="text-slate-500 text-sm mt-1">Isi data calon siswa di bawah ini dengan lengkap dan benar.</p>
+                </div>
+
+                <div id="alertSuccess" class="hidden mb-6 p-4 bg-green-100 border border-green-300 text-green-800 rounded-xl text-sm text-center">
+                    🎉 <strong>Pendaftaran Berhasil!</strong> Data Anda telah terkirim ke panitia PPDB.
+                </div>
+
+                <form id="publicRegisterForm" onsubmit="handleSubmitMandiri(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap Siswa</label>
+                        <input type="text" id="nama_lengkap" required placeholder="Contoh: Ahmad Subagja" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">NISN (Nomor Induk Siswa Nasional)</label>
+                        <input type="number" id="nisn" required placeholder="10 digit nomor NISN" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Jenis Kelamin</label>
+                            <select id="jenis_kelamin" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                                <option value="">-- Pilih --</option>
+                                <option value="Laki-laki">Laki-laki</option>
+                                <option value="Perempuan">Perempuan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">No. HP / WhatsApp Active</label>
+                            <input type="tel" id="no_hp" required placeholder="08xxxxxxxxxx" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Asal Sekolah (SMP / MTs / Drajat)</label>
+                        <input type="text" id="asal_sekolah" required placeholder="Contoh: SMP Negeri 1 Jakarta" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    </div>
+
+                    <button type="submit" id="btnDaftar" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-md transition text-sm">
+                        Kirim Pendaftaran
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="adminSection" class="hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Panel Kelola Pendaftaran (Khusus Guru)</h2>
+                        <p class="text-slate-500 text-sm">Pantau daftar calon siswa yang sudah melakukan pendaftaran online.</p>
+                    </div>
+                    <button onclick="fetchSiswa()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        🔄 Refresh Data
+                    </button>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 border-b">
-                                <th class="p-3">Nama</th>
+                                <th class="p-3">Nama Lengkap</th>
                                 <th class="p-3">NISN</th>
                                 <th class="p-3">JK</th>
                                 <th class="p-3">Asal Sekolah</th>
-                                <th class="p-3">No HP</th>
-                                <th class="p-3">Aksi</th>
+                                <th class="p-3">No. HP / WA</th>
+                                <th class="p-3 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="studentTableBody">
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-slate-500">Memuat data...</td>
+                                <td colspan="6" class="text-center py-6 text-slate-400">Memuat data...</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-
         </div>
-    </div>
+
+    </main>
 
     <script>
         // === KONFIGURASI SUPABASE ===
-        // GANTI DENGAN URL & KEY MILIK ANDA
-        const SUPABASE_URL = "https://pfptkqgjgojffyijjulg.supabase.co";
+        // Masukkan URL dan Key milik Anda di sini
+        const SUPABASE_URL = "https://pfptkqgjgojffyijjulg.supabase.co"; 
         const SUPABASE_KEY = "sb_publishable_OjCRKqcO12xl0efbhVHj2g_6jBePvW8";
 
-        // Inisialisasi Client Supabase (Menggunakan nama variabel supabaseClient agar tidak bentrok)
+        // Inisialisasi Supabase Client
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-        // Kredensial Admin
+        // Kredensial Login Admin/Guru
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "admin123";
 
-        // Jalankan saat halaman dibuka
+        // Inisialisasi Tampilan
         document.addEventListener("DOMContentLoaded", () => {
-            if (sessionStorage.getItem("isLoggedIn") === "true") {
-                showDashboard();
-            }
+            checkAuthStatus();
         });
 
-        // Handler Login
+        // Cek Status Login Guru
+        function checkAuthStatus() {
+            const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+            if (isLoggedIn) {
+                document.getElementById("btnOpenLogin").classList.add("hidden");
+                document.getElementById("btnLogout").classList.remove("hidden");
+                document.getElementById("publicSection").classList.add("hidden");
+                document.getElementById("adminSection").classList.remove("hidden");
+                fetchSiswa(); // Muat data tabel siswa
+            } else {
+                document.getElementById("btnOpenLogin").classList.remove("hidden");
+                document.getElementById("btnLogout").classList.add("hidden");
+                document.getElementById("publicSection").classList.remove("hidden");
+                document.getElementById("adminSection").classList.add("hidden");
+            }
+        }
+
+        // Kontrol Modal Login
+        function showModalLogin() { document.getElementById("loginModal").classList.remove("hidden"); }
+        function closeModalLogin() { document.getElementById("loginModal").classList.add("hidden"); }
+
+        // Logic Login Guru
         function handleLogin(event) {
             event.preventDefault();
             const user = document.getElementById("username").value;
@@ -133,71 +180,31 @@
             if (user === ADMIN_USER && pass === ADMIN_PASS) {
                 sessionStorage.setItem("isLoggedIn", "true");
                 errorDiv.classList.add("hidden");
-                showDashboard();
+                closeModalLogin();
+                checkAuthStatus();
             } else {
                 errorDiv.textContent = "Username atau password salah!";
                 errorDiv.classList.remove("hidden");
             }
         }
 
-        // Handler Logout
+        // Logic Logout Guru
         function handleLogout() {
             sessionStorage.removeItem("isLoggedIn");
-            document.getElementById("dashboardSection").classList.add("hidden");
-            document.getElementById("loginSection").classList.remove("hidden");
+            checkAuthStatus();
         }
 
-        // Tampilkan Dashboard
-        function showDashboard() {
-            document.getElementById("loginSection").classList.add("hidden");
-            document.getElementById("dashboardSection").classList.remove("hidden");
-            fetchSiswa();
-        }
-
-        // Ambil Data Siswa (READ)
-        async function fetchSiswa() {
-            if (!supabaseClient) return;
-
-            const tableBody = document.getElementById("studentTableBody");
-            tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-500">Memuat data...</td></tr>`;
-
-            const { data, error } = await supabaseClient
-                .from('pendaftaran_siswa')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                alert("Gagal mengambil data dari database: " + error.message);
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">Belum ada siswa yang mendaftar.</td></tr>`;
-                return;
-            }
-
-            tableBody.innerHTML = data.map(siswa => `
-                <tr class="border-b hover:bg-slate-50">
-                    <td class="p-3 font-medium text-slate-800">${siswa.nama_lengkap}</td>
-                    <td class="p-3 text-slate-600">${siswa.nisn}</td>
-                    <td class="p-3 text-slate-600">${siswa.jenis_kelamin}</td>
-                    <td class="p-3 text-slate-600">${siswa.asal_sekolah}</td>
-                    <td class="p-3 text-slate-600">${siswa.no_hp}</td>
-                    <td class="p-3">
-                        <button onclick="deleteSiswa(${siswa.id})" class="text-red-500 hover:text-red-700 font-medium">Hapus</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Tambah Data Siswa (CREATE)
-        async function handleSubmitSiswa(event) {
+        // INPUT SISWA MANDIRI (PUBLIC)
+        async function handleSubmitMandiri(event) {
             event.preventDefault();
-            if (!supabaseClient) return;
+            if (!supabaseClient) {
+                alert("Koneksi Supabase belum terkonfigurasi dengan benar.");
+                return;
+            }
 
-            const btn = document.getElementById("btnSubmit");
+            const btn = document.getElementById("btnDaftar");
             btn.disabled = true;
-            btn.innerText = "Menyimpan...";
+            btn.innerText = "Mengirim Data...";
 
             const payload = {
                 nama_lengkap: document.getElementById("nama_lengkap").value,
@@ -212,18 +219,58 @@
                 .insert([payload]);
 
             if (error) {
-                alert("Gagal menambahkan data: " + error.message);
+                alert("Gagal Pendaftaran: " + error.message);
             } else {
-                alert("Data siswa berhasil ditambahkan!");
-                document.getElementById("studentForm").reset();
-                fetchSiswa();
+                document.getElementById("alertSuccess").classList.remove("hidden");
+                document.getElementById("publicRegisterForm").reset();
+                
+                // Sembunyikan alert sukses setelah 5 detik
+                setTimeout(() => {
+                    document.getElementById("alertSuccess").classList.add("hidden");
+                }, 5000);
             }
 
             btn.disabled = false;
-            btn.innerText = "Daftarkan Siswa";
+            btn.innerText = "Kirim Pendaftaran";
         }
 
-        // Hapus Data Siswa (DELETE)
+        // READ DATA SISWA (GURU/ADMIN KHUSUS)
+        async function fetchSiswa() {
+            if (!supabaseClient) return;
+
+            const tableBody = document.getElementById("studentTableBody");
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Memuat data...</td></tr>`;
+
+            const { data, error } = await supabaseClient
+                .from('pendaftaran_siswa')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                alert("Gagal memuat data: " + error.message);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada siswa yang mendaftar.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = data.map(siswa => `
+                <tr class="border-b hover:bg-slate-50 transition">
+                    <td class="p-3 font-semibold text-slate-800">${siswa.nama_lengkap}</td>
+                    <td class="p-3 text-slate-600">${siswa.nisn}</td>
+                    <td class="p-3 text-slate-600">${siswa.jenis_kelamin}</td>
+                    <td class="p-3 text-slate-600">${siswa.asal_sekolah}</td>
+                    <td class="p-3 text-slate-600">${siswa.no_hp}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteSiswa(${siswa.id})" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded-md font-medium text-xs transition">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // DELETE DATA SISWA (GURU/ADMIN KHUSUS)
         async function deleteSiswa(id) {
             if (!supabaseClient) return;
 
